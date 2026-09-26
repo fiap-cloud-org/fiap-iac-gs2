@@ -1,0 +1,28 @@
+# Terraform
+.terraform/
+.terraform.lock.hcl.bak
+*.tfstate
+*.tfstate.*
+*.tfplan
+tfplan
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Variáveis e backend reais (os exemplos ficam versionados)
+*.tfvars
+*.tfvars.json
+!*.tfvars.example
+backend.hcl
+!backend.hcl.example
+
+# Segredos
+.env
+*.pem
+
+# Sistema
+.DS_Store
+Thumbs.db
