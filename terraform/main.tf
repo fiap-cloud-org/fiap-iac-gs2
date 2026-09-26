@@ -2,6 +2,7 @@
 
 module "network" {
   source                        = "./modules/network"
+  name_prefix                   = var.project_name
   primary_vpc_cidr              = var.primary_vpc_cidr
   secondary_vpc_cidr            = var.secondary_vpc_cidr
   primary_public_subnet_cidr    = var.primary_public_subnet_cidr
@@ -13,6 +14,7 @@ module "network" {
 
 module "compute" {
   source                      = "./modules/compute"
+  name_prefix                 = var.project_name
   primary_vpc_id              = module.network.primary_vpc_id
   secondary_vpc_id            = module.network.secondary_vpc_id
   primary_vpc_cidr            = var.primary_vpc_cidr

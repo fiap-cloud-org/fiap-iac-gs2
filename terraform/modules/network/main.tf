@@ -3,27 +3,42 @@
 resource "aws_vpc" "primary" {
   cidr_block           = var.primary_vpc_cidr
   enable_dns_hostnames = true
+  tags = {
+    Name = "${var.name_prefix}-vpc-primary"
+  }
 }
 
 resource "aws_vpc" "secondary" {
   cidr_block           = var.secondary_vpc_cidr
   enable_dns_hostnames = true
+  tags = {
+    Name = "${var.name_prefix}-vpc-secondary"
+  }
 }
 
 resource "aws_vpc_peering_connection" "primary_secondary" {
   peer_vpc_id = aws_vpc.primary.id
   vpc_id      = aws_vpc.secondary.id
   auto_accept = true
+  tags = {
+    Name = "${var.name_prefix}-peering-primary-secondary"
+  }
 }
 
 # Internet gateways
 
 resource "aws_internet_gateway" "primary" {
   vpc_id = aws_vpc.primary.id
+  tags = {
+    Name = "${var.name_prefix}-igw-primary"
+  }
 }
 
 resource "aws_internet_gateway" "secondary" {
   vpc_id = aws_vpc.secondary.id
+  tags = {
+    Name = "${var.name_prefix}-igw-secondary"
+  }
 }
 
 # Subnets públicas e privadas
@@ -33,6 +48,9 @@ resource "aws_subnet" "primary_public" {
   availability_zone       = var.availability_zones[0]
   cidr_block              = var.primary_public_subnet_cidr
   map_public_ip_on_launch = true
+  tags = {
+    Name = "${var.name_prefix}-subnet-primary-public"
+  }
 }
 
 resource "aws_subnet" "secondary_public" {
@@ -40,6 +58,9 @@ resource "aws_subnet" "secondary_public" {
   availability_zone       = var.availability_zones[0]
   cidr_block              = var.secondary_public_subnet_cidr
   map_public_ip_on_launch = true
+  tags = {
+    Name = "${var.name_prefix}-subnet-secondary-public"
+  }
 }
 
 resource "aws_subnet" "primary_private" {
@@ -47,6 +68,9 @@ resource "aws_subnet" "primary_private" {
   availability_zone       = var.availability_zones[1]
   cidr_block              = var.primary_private_subnet_cidr
   map_public_ip_on_launch = false
+  tags = {
+    Name = "${var.name_prefix}-subnet-primary-private"
+  }
 }
 
 resource "aws_subnet" "secondary_private" {
@@ -54,22 +78,41 @@ resource "aws_subnet" "secondary_private" {
   availability_zone       = var.availability_zones[1]
   cidr_block              = var.secondary_private_subnet_cidr
   map_public_ip_on_launch = false
+  tags = {
+    Name = "${var.name_prefix}-subnet-secondary-private"
+  }
 }
 
 # NAT gateways (saída para a internet das subnets privadas)
 
-resource "aws_eip" "nat_primary" {}
+resource "aws_eip" "nat_primary" {
+  domain = "vpc"
+  tags = {
+    Name = "${var.name_prefix}-eip-nat-primary"
+  }
+}
 
-resource "aws_eip" "nat_secondary" {}
+resource "aws_eip" "nat_secondary" {
+  domain = "vpc"
+  tags = {
+    Name = "${var.name_prefix}-eip-nat-secondary"
+  }
+}
 
 resource "aws_nat_gateway" "primary" {
   allocation_id = aws_eip.nat_primary.id
   subnet_id     = aws_subnet.primary_public.id
+  tags = {
+    Name = "${var.name_prefix}-nat-primary"
+  }
 }
 
 resource "aws_nat_gateway" "secondary" {
   allocation_id = aws_eip.nat_secondary.id
   subnet_id     = aws_subnet.secondary_public.id
+  tags = {
+    Name = "${var.name_prefix}-nat-secondary"
+  }
 }
 
 # Tabelas de rotas
@@ -84,6 +127,9 @@ resource "aws_route_table" "primary_public" {
     cidr_block = var.secondary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
   }
+  tags = {
+    Name = "${var.name_prefix}-rt-primary-public"
+  }
 }
 
 resource "aws_route_table" "secondary_public" {
@@ -95,6 +141,9 @@ resource "aws_route_table" "secondary_public" {
   route {
     cidr_block = var.primary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
+  }
+  tags = {
+    Name = "${var.name_prefix}-rt-secondary-public"
   }
 }
 
@@ -108,6 +157,9 @@ resource "aws_route_table" "primary_private" {
     cidr_block = var.secondary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
   }
+  tags = {
+    Name = "${var.name_prefix}-rt-primary-private"
+  }
 }
 
 resource "aws_route_table" "secondary_private" {
@@ -119,6 +171,9 @@ resource "aws_route_table" "secondary_private" {
   route {
     cidr_block = var.primary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
+  }
+  tags = {
+    Name = "${var.name_prefix}-rt-secondary-private"
   }
 }
 

@@ -2,7 +2,9 @@
 # também aceitam HTTP (80) da internet e SSH (22) das faixas em allowed_ssh_cidrs.
 
 resource "aws_security_group" "primary_public" {
-  vpc_id = var.primary_vpc_id
+  vpc_id      = var.primary_vpc_id
+  name        = "${var.name_prefix}-sg-primary-public"
+  description = "Subnet publica da VPC principal"
   egress {
     from_port   = 0
     to_port     = 0
@@ -26,11 +28,16 @@ resource "aws_security_group" "primary_public" {
     to_port     = 80
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+  tags = {
+    Name = "${var.name_prefix}-sg-primary-public"
   }
 }
 
 resource "aws_security_group" "secondary_public" {
-  vpc_id = var.secondary_vpc_id
+  vpc_id      = var.secondary_vpc_id
+  name        = "${var.name_prefix}-sg-secondary-public"
+  description = "Subnet publica da VPC secundaria"
   egress {
     from_port   = 0
     to_port     = 0
@@ -55,10 +62,15 @@ resource "aws_security_group" "secondary_public" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  tags = {
+    Name = "${var.name_prefix}-sg-secondary-public"
+  }
 }
 
 resource "aws_security_group" "primary_private" {
-  vpc_id = var.primary_vpc_id
+  vpc_id      = var.primary_vpc_id
+  name        = "${var.name_prefix}-sg-primary-private"
+  description = "Subnet privada da VPC principal"
   egress {
     from_port   = 0
     to_port     = 0
@@ -70,11 +82,16 @@ resource "aws_security_group" "primary_private" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = [var.primary_vpc_cidr, var.secondary_vpc_cidr]
+  }
+  tags = {
+    Name = "${var.name_prefix}-sg-primary-private"
   }
 }
 
 resource "aws_security_group" "secondary_private" {
-  vpc_id = var.secondary_vpc_id
+  vpc_id      = var.secondary_vpc_id
+  name        = "${var.name_prefix}-sg-secondary-private"
+  description = "Subnet privada da VPC secundaria"
   egress {
     from_port   = 0
     to_port     = 0
@@ -86,6 +103,9 @@ resource "aws_security_group" "secondary_private" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = [var.primary_vpc_cidr, var.secondary_vpc_cidr]
+  }
+  tags = {
+    Name = "${var.name_prefix}-sg-secondary-private"
   }
 }
 
@@ -132,7 +152,7 @@ resource "aws_instance" "nagios_core" {
   user_data                   = local.nagios_core_user_data
   user_data_replace_on_change = true
   tags = {
-    Name = "nagios-core"
+    Name = "${var.name_prefix}-nagios-core"
   }
 }
 
@@ -161,6 +181,6 @@ resource "aws_instance" "agent" {
   user_data                   = local.agent_user_data
   user_data_replace_on_change = true
   tags = {
-    Name = each.key
+    Name = "${var.name_prefix}-${each.key}"
   }
 }
