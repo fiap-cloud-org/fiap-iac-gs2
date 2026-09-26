@@ -1,3 +1,8 @@
+variable "name_prefix" {
+  description = "Prefixo da tag Name"
+  type        = string
+}
+
 variable "primary_vpc_cidr" {
   description = "CIDR da VPC principal (Nagios Core e agentes)"
   type        = string

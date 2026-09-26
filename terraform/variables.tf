@@ -1,3 +1,9 @@
+variable "project_name" {
+  description = "Prefixo dos nomes dos recursos e valor da tag Project"
+  type        = string
+  default     = "fiap-iac-gs2"
+}
+
 variable "aws_region" {
   description = "Região da AWS"
   type        = string

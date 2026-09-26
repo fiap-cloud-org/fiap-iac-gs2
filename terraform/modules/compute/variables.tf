@@ -1,3 +1,8 @@
+variable "name_prefix" {
+  description = "Prefixo dos nomes e da tag Name"
+  type        = string
+}
+
 variable "primary_vpc_id" {
   description = "ID da VPC principal"
   type        = string
