@@ -1,31 +1,17 @@
-output "nagios-core_id" {
-    value = aws_instance.nagios-core.id  
+output "nagios_core_instance_id" {
+  value = aws_instance.nagios_core.id
 }
 
-output "node_c_id" {
-    value = aws_instance.node_c.id  
+output "nagios_core_public_ip" {
+  value = aws_instance.nagios_core.public_ip
 }
 
-output "node_a_id" {
-    value = aws_instance.node_a.id   
+output "agent_instance_ids" {
+  description = "IDs das instâncias dos agentes, por nome"
+  value       = { for name, instance in aws_instance.agent : name => instance.id }
 }
 
-output "node_d_id" {
-    value = aws_instance.node_d.id  
+output "agent_private_ips" {
+  description = "IPs privados dos agentes, por nome (usados para cadastrar os hosts no Nagios)"
+  value       = { for name, instance in aws_instance.agent : name => instance.private_ip }
 }
-
-output "node_b_id" {
-    value = aws_instance.node_b.id    
-}
-
-output "node_wim_id" {
-    value = aws_instance.node_wim.id     
-}
-
-output "node_e_id" {
-    value = aws_instance.node_e.id      
-}
-
-output "node_f_id" {
-    value = aws_instance.node_f.id      
-  }

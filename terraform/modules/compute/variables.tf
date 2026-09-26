@@ -1,11 +1,45 @@
-variable "vpc10_id" {}
-variable "vpc20_id" {}
-variable "vpc10_batata" {}  
-variable "vpc20_frita" {}
-variable "vpc10_sn_pub_az1a_id" {}
-variable "vpc10_sn_priv_az1c_id" {}
-variable "vpc20_sn_pub_az1a_id" {}
-variable "vpc20_sn_priv_az1c_id" {}
+variable "primary_vpc_id" {
+  description = "ID da VPC principal"
+  type        = string
+}
+
+variable "secondary_vpc_id" {
+  description = "ID da VPC secundária"
+  type        = string
+}
+
+variable "primary_vpc_cidr" {
+  description = "CIDR da VPC principal (liberado entre as VPCs)"
+  type        = string
+}
+
+variable "secondary_vpc_cidr" {
+  description = "CIDR da VPC secundária (liberado entre as VPCs)"
+  type        = string
+}
+
+variable "primary_public_subnet_id" {
+  description = "Subnet pública da VPC principal"
+  type        = string
+}
+
+variable "primary_private_subnet_id" {
+  description = "Subnet privada da VPC principal"
+  type        = string
+}
+
+variable "secondary_public_subnet_id" {
+  description = "Subnet pública da VPC secundária"
+  type        = string
+}
+
+variable "secondary_private_subnet_id" {
+  description = "Subnet privada da VPC secundária"
+  type        = string
+}
+
 variable "nagios_admin_password" {
-  sensitive = true
+  description = "Senha do usuário nagiosadmin na interface web do Nagios"
+  type        = string
+  sensitive   = true
 }

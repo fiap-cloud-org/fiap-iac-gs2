@@ -1,218 +1,145 @@
-//SECURITY GROUP PUBLIC VPC10
-resource "aws_security_group" "vpc_sg_pub1" {
-    vpc_id = var.vpc10_id
-    egress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = [var.vpc10_batata,var.vpc20_frita]
-    }
-    ingress {
-        from_port   = "22"
-        to_port     = "22"
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port   = "80"
-        to_port     = "80"
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+# Security groups: tráfego livre entre as duas VPCs; as subnets públicas
+# também aceitam SSH (22) e HTTP (80) da internet.
+
+resource "aws_security_group" "primary_public" {
+  vpc_id = var.primary_vpc_id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.primary_vpc_cidr, var.secondary_vpc_cidr]
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-//SECURITY GROUP PUBLIC VPC20
-
-resource "aws_security_group" "vpc_sg_pub2" {
-    vpc_id = var.vpc20_id
-    egress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = [var.vpc10_batata,var.vpc20_frita]
-    }
-    ingress {
-        from_port   = "22"
-        to_port     = "22"
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port   = "80"
-        to_port     = "80"
-        protocol    = "tcp"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
+resource "aws_security_group" "secondary_public" {
+  vpc_id = var.secondary_vpc_id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.primary_vpc_cidr, var.secondary_vpc_cidr]
+  }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 }
 
-//SECURITY GROUP PRIVATE VPC10
-
-resource "aws_security_group" "vpc_sg_priv1" {
-    vpc_id = var.vpc10_id
-    egress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = [var.vpc10_batata,var.vpc20_frita]
-    } 
+resource "aws_security_group" "primary_private" {
+  vpc_id = var.primary_vpc_id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.primary_vpc_cidr, var.secondary_vpc_cidr]
+  }
 }
 
-//SECURITY GROUP PRIVATE VPC20
-
-resource "aws_security_group" "vpc_sg_priv2" {
-    vpc_id = var.vpc20_id
-    egress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = ["0.0.0.0/0"]
-    }
-    ingress {
-        from_port   = "0"
-        to_port     = "0"
-        protocol    = "-1"
-        cidr_blocks = [var.vpc10_batata,var.vpc20_frita]
-    } 
+resource "aws_security_group" "secondary_private" {
+  vpc_id = var.secondary_vpc_id
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+  ingress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = [var.primary_vpc_cidr, var.secondary_vpc_cidr]
+  }
 }
 
+# User-data
 
-data "template_file" "nagios-core" {
+data "template_file" "nagios_core_user_data" {
   template = file("./modules/compute/scripts/nagios-core.sh")
   vars = {
     nagios_admin_password = var.nagios_admin_password
   }
 }
 
-//AQUI ESTA A MAQUINA NAGIOS CORE
+data "template_file" "agent_user_data" {
+  template = file("./modules/compute/scripts/nagios-agent.sh")
+}
 
-resource "aws_instance" "nagios-core" {
+# Servidor Nagios Core (VPC principal, subnet pública)
+
+resource "aws_instance" "nagios_core" {
   ami                    = "ami-0a1179631ec8933d7"
   instance_type          = "t2.micro"
-  subnet_id              = var.vpc10_sn_pub_az1a_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_pub1.id]
+  subnet_id              = var.primary_public_subnet_id
+  vpc_security_group_ids = [aws_security_group.primary_public.id]
   key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-core.rendered)
+  user_data              = base64encode(data.template_file.nagios_core_user_data.rendered)
   tags = {
     Name = "nagios-core"
   }
 }
 
-data "template_file" "nagios-agent" {
-  template = file("./modules/compute/scripts/nagios-agent.sh")
-}
+# Agentes monitorados (NCPA + SNMP): um mapa nome => subnet/security group
 
-//MAQUINA NAGIOS AGENT (noce_c) que esta na VPC10 e na subnet privada az1c com o security group privado1
-
-resource "aws_instance" "node_c" {
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = var.vpc10_sn_priv_az1c_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_priv1.id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-agent.rendered)
-  tags = {
-    Name = "agent-node-c"
+locals {
+  agents = {
+    "agent-primary-public"      = { subnet_id = var.primary_public_subnet_id, security_group_id = aws_security_group.primary_public.id }
+    "agent-primary-private-1"   = { subnet_id = var.primary_private_subnet_id, security_group_id = aws_security_group.primary_private.id }
+    "agent-primary-private-2"   = { subnet_id = var.primary_private_subnet_id, security_group_id = aws_security_group.primary_private.id }
+    "agent-secondary-public-1"  = { subnet_id = var.secondary_public_subnet_id, security_group_id = aws_security_group.secondary_public.id }
+    "agent-secondary-public-2"  = { subnet_id = var.secondary_public_subnet_id, security_group_id = aws_security_group.secondary_public.id }
+    "agent-secondary-private-1" = { subnet_id = var.secondary_private_subnet_id, security_group_id = aws_security_group.secondary_private.id }
+    "agent-secondary-private-2" = { subnet_id = var.secondary_private_subnet_id, security_group_id = aws_security_group.secondary_private.id }
   }
 }
 
-//MAQUINA NAGIOS AGENT (node_a) que esta na VPC10 e na subnet publica az1a com o security group publico1
+resource "aws_instance" "agent" {
+  for_each = local.agents
 
-resource "aws_instance" "node_a" {
   ami                    = "ami-0a1179631ec8933d7"
   instance_type          = "t2.micro"
-  subnet_id              = var.vpc10_sn_pub_az1a_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_pub1.id]
+  subnet_id              = each.value.subnet_id
+  vpc_security_group_ids = [each.value.security_group_id]
   key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-agent.rendered)
+  user_data              = base64encode(data.template_file.agent_user_data.rendered)
   tags = {
-    Name = "agent-node-a"
-  }
-}
-
-//MAQUINA NAGIOS AGENT (noce_d) que esta na VPC10 e na subnet privada az1c com o security group privado1
-
-resource "aws_instance" "node_d" {
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = var.vpc10_sn_priv_az1c_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_priv1.id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-agent.rendered)
-  tags = {
-    Name = "agent-node-d"
-  }
-}
-
-//MAQUINA NAGIOS AGENT (node_b) que esta na VPC20 e na subnet publica az1a com o security group publico2
-
-resource "aws_instance" "node_b" {
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = var.vpc20_sn_pub_az1a_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_pub2.id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-agent.rendered)
-  tags = {
-    Name = "agent-node-b"
-  }
-}
-
-//MAQUINA NAGIOS AGENT (node_wim) que esta na VPC20 e na subnet publica az1a com o security group publico2
-
-resource "aws_instance" "node_wim" {
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = var.vpc20_sn_pub_az1a_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_pub2.id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-agent.rendered)
-  tags = {
-    Name = "agent-node-wim"
-  }
-}
-
-//MAQUINA NAGIOS AGENT (node_e) que esta na VPC20 e na subnet privada az1c com o security group privado2
-
-resource "aws_instance" "node_e" {
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = var.vpc20_sn_priv_az1c_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_priv2.id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-agent.rendered)
-  tags = {
-    Name = "agent-node-e"
-  }
-}
-
-//MAQUINA NAGIOS AGENT (node_f) que esta na VPC20 e na subnet privada az1c com o security group privado2
-
-resource "aws_instance" "node_f" {
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = var.vpc20_sn_priv_az1c_id
-  vpc_security_group_ids = [aws_security_group.vpc_sg_priv2.id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios-agent.rendered)
-  tags = {
-    Name = "agent-node-f"
+    Name = each.key
   }
 }
