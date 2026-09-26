@@ -51,6 +51,12 @@ variable "primary_public_subnet_cidr" {
   default     = "10.0.1.0/24"
 }
 
+variable "primary_public_subnet_b_cidr" {
+  description = "CIDR da segunda subnet pública da VPC principal (usada pelo ALB)"
+  type        = string
+  default     = "10.0.3.0/24"
+}
+
 variable "primary_private_subnet_cidr" {
   description = "CIDR da subnet privada da VPC principal"
   type        = string

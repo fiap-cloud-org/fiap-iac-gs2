@@ -53,6 +53,18 @@ resource "aws_subnet" "primary_public" {
   }
 }
 
+# Segunda subnet pública da VPC principal, em outra zona: o Application Load
+# Balancer exige subnets em pelo menos duas zonas de disponibilidade.
+resource "aws_subnet" "primary_public_b" {
+  vpc_id                  = aws_vpc.primary.id
+  availability_zone       = var.availability_zones[1]
+  cidr_block              = var.primary_public_subnet_b_cidr
+  map_public_ip_on_launch = true
+  tags = {
+    Name = "${var.name_prefix}-subnet-primary-public-b"
+  }
+}
+
 resource "aws_subnet" "secondary_public" {
   vpc_id                  = aws_vpc.secondary.id
   availability_zone       = var.availability_zones[0]
@@ -181,6 +193,11 @@ resource "aws_route_table" "secondary_private" {
 
 resource "aws_route_table_association" "primary_public" {
   subnet_id      = aws_subnet.primary_public.id
+  route_table_id = aws_route_table.primary_public.id
+}
+
+resource "aws_route_table_association" "primary_public_b" {
+  subnet_id      = aws_subnet.primary_public_b.id
   route_table_id = aws_route_table.primary_public.id
 }
 
