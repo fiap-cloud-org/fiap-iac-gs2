@@ -1,0 +1,8 @@
+# Copie para backend.hcl e preencha com o seu bucket e a sua tabela:
+#   terraform init -backend-config=backend.hcl
+# O bucket S3 guarda o estado e a tabela do DynamoDB (chave de partição LockID, tipo String) faz o lock.
+bucket         = "meu-bucket-de-tfstate"
+key            = "fiap-iac-gs2/terraform.tfstate"
+region         = "us-east-1"
+dynamodb_table = "minha-tabela-de-lock"
+encrypt        = true
