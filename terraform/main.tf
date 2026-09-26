@@ -32,8 +32,11 @@ module "compute" {
 }
 
 module "lb" {
-  source = "./modules/lb"
-  vpc_id = module.network.primary_vpc_id
+  source      = "./modules/lb"
+  name_prefix = var.project_name
+  vpc_id      = module.network.primary_vpc_id
+  vpc_cidr    = var.primary_vpc_cidr
+  subnet_ids  = module.network.primary_public_subnet_ids
   target_instance_ids = {
     "nagios-core"          = module.compute.nagios_core_instance_id
     "agent-primary-public" = module.compute.agent_instance_ids["agent-primary-public"]
