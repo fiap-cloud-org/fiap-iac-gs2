@@ -43,3 +43,13 @@ variable "nagios_admin_password" {
   type        = string
   sensitive   = true
 }
+
+variable "instance_type" {
+  description = "Tipo das instâncias EC2"
+  type        = string
+}
+
+variable "key_name" {
+  description = "Key pair usado no SSH das instâncias"
+  type        = string
+}

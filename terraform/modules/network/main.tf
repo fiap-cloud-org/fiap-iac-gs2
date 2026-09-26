@@ -30,28 +30,28 @@ resource "aws_internet_gateway" "secondary" {
 
 resource "aws_subnet" "primary_public" {
   vpc_id                  = aws_vpc.primary.id
-  availability_zone       = "us-east-1a"
+  availability_zone       = var.availability_zones[0]
   cidr_block              = var.primary_public_subnet_cidr
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "secondary_public" {
   vpc_id                  = aws_vpc.secondary.id
-  availability_zone       = "us-east-1a"
+  availability_zone       = var.availability_zones[0]
   cidr_block              = var.secondary_public_subnet_cidr
   map_public_ip_on_launch = true
 }
 
 resource "aws_subnet" "primary_private" {
   vpc_id                  = aws_vpc.primary.id
-  availability_zone       = "us-east-1c"
+  availability_zone       = var.availability_zones[1]
   cidr_block              = var.primary_private_subnet_cidr
   map_public_ip_on_launch = false
 }
 
 resource "aws_subnet" "secondary_private" {
   vpc_id                  = aws_vpc.secondary.id
-  availability_zone       = "us-east-1c"
+  availability_zone       = var.availability_zones[1]
   cidr_block              = var.secondary_private_subnet_cidr
   map_public_ip_on_launch = false
 }

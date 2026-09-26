@@ -122,10 +122,10 @@ locals {
 
 resource "aws_instance" "nagios_core" {
   ami                         = data.aws_ami.amazon_linux_2.id
-  instance_type               = "t2.micro"
+  instance_type               = var.instance_type
   subnet_id                   = var.primary_public_subnet_id
   vpc_security_group_ids      = [aws_security_group.primary_public.id]
-  key_name                    = "vockey"
+  key_name                    = var.key_name
   user_data                   = local.nagios_core_user_data
   user_data_replace_on_change = true
   tags = {
@@ -151,10 +151,10 @@ resource "aws_instance" "agent" {
   for_each = local.agents
 
   ami                         = data.aws_ami.amazon_linux_2.id
-  instance_type               = "t2.micro"
+  instance_type               = var.instance_type
   subnet_id                   = each.value.subnet_id
   vpc_security_group_ids      = [each.value.security_group_id]
-  key_name                    = "vockey"
+  key_name                    = var.key_name
   user_data                   = local.agent_user_data
   user_data_replace_on_change = true
   tags = {

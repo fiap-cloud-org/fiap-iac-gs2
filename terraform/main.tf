@@ -8,6 +8,7 @@ module "network" {
   primary_private_subnet_cidr   = var.primary_private_subnet_cidr
   secondary_public_subnet_cidr  = var.secondary_public_subnet_cidr
   secondary_private_subnet_cidr = var.secondary_private_subnet_cidr
+  availability_zones            = var.availability_zones
 }
 
 module "compute" {
@@ -20,6 +21,8 @@ module "compute" {
   primary_private_subnet_id   = module.network.primary_private_subnet_id
   secondary_public_subnet_id  = module.network.secondary_public_subnet_id
   secondary_private_subnet_id = module.network.secondary_private_subnet_id
+  instance_type               = var.instance_type
+  key_name                    = var.key_name
   nagios_admin_password       = var.nagios_admin_password
 }
 

@@ -27,3 +27,8 @@ variable "secondary_private_subnet_cidr" {
   description = "CIDR da subnet privada da VPC secundária"
   type        = string
 }
+
+variable "availability_zones" {
+  description = "Zonas das subnets: [0] públicas, [1] privadas"
+  type        = list(string)
+}

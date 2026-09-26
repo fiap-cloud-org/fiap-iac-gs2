@@ -1,3 +1,32 @@
+variable "aws_region" {
+  description = "Região da AWS"
+  type        = string
+  default     = "us-east-1"
+}
+
+variable "availability_zones" {
+  description = "Duas zonas da região: a primeira recebe as subnets públicas e a segunda as privadas"
+  type        = list(string)
+  default     = ["us-east-1a", "us-east-1c"]
+
+  validation {
+    condition     = length(var.availability_zones) == 2
+    error_message = "Informe exatamente duas zonas de disponibilidade."
+  }
+}
+
+variable "instance_type" {
+  description = "Tipo das instâncias EC2 (Nagios Core e agentes)"
+  type        = string
+  default     = "t2.micro"
+}
+
+variable "key_name" {
+  description = "Key pair da AWS usado no SSH das instâncias (vockey é o padrão do AWS Academy)"
+  type        = string
+  default     = "vockey"
+}
+
 variable "primary_vpc_cidr" {
   description = "CIDR da VPC principal"
   type        = string
