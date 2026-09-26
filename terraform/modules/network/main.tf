@@ -81,7 +81,7 @@ resource "aws_route_table" "primary_public" {
     gateway_id = aws_internet_gateway.primary.id
   }
   route {
-    cidr_block = "20.0.0.0/16"
+    cidr_block = var.secondary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
   }
 }
@@ -93,7 +93,7 @@ resource "aws_route_table" "secondary_public" {
     gateway_id = aws_internet_gateway.secondary.id
   }
   route {
-    cidr_block = "10.0.0.0/16"
+    cidr_block = var.primary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
   }
 }
@@ -105,7 +105,7 @@ resource "aws_route_table" "primary_private" {
     gateway_id = aws_nat_gateway.primary.id
   }
   route {
-    cidr_block = "20.0.0.0/16"
+    cidr_block = var.secondary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
   }
 }
@@ -117,7 +117,7 @@ resource "aws_route_table" "secondary_private" {
     gateway_id = aws_nat_gateway.secondary.id
   }
   route {
-    cidr_block = "10.0.0.0/16"
+    cidr_block = var.primary_vpc_cidr
     gateway_id = aws_vpc_peering_connection.primary_secondary.id
   }
 }
