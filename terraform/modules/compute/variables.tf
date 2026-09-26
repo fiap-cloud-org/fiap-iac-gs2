@@ -53,3 +53,14 @@ variable "key_name" {
   description = "Key pair usado no SSH das instâncias"
   type        = string
 }
+
+variable "snmp_community" {
+  description = "Community SNMP (somente leitura) configurada nos agentes"
+  type        = string
+  sensitive   = true
+}
+
+variable "allowed_ssh_cidrs" {
+  description = "Faixas que podem acessar as instâncias públicas por SSH"
+  type        = list(string)
+}

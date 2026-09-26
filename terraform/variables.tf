@@ -67,4 +67,21 @@ variable "nagios_admin_password" {
   description = "Senha do usuário nagiosadmin na interface web do Nagios"
   type        = string
   sensitive   = true
+
+  validation {
+    condition     = length(var.nagios_admin_password) >= 12
+    error_message = "Use uma senha com pelo menos 12 caracteres."
+  }
+}
+
+variable "snmp_community" {
+  description = "Community SNMP (somente leitura) configurada nos agentes"
+  type        = string
+  sensitive   = true
+}
+
+variable "allowed_ssh_cidrs" {
+  description = "Faixas que podem acessar as instâncias públicas por SSH (restrinja ao seu IP)"
+  type        = list(string)
+  default     = ["0.0.0.0/0"]
 }

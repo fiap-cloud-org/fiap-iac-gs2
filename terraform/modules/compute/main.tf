@@ -1,5 +1,5 @@
 # Security groups: tráfego livre entre as duas VPCs; as subnets públicas
-# também aceitam SSH (22) e HTTP (80) da internet.
+# também aceitam HTTP (80) da internet e SSH (22) das faixas em allowed_ssh_cidrs.
 
 resource "aws_security_group" "primary_public" {
   vpc_id = var.primary_vpc_id
@@ -19,7 +19,7 @@ resource "aws_security_group" "primary_public" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_ssh_cidrs
   }
   ingress {
     from_port   = 80
@@ -47,7 +47,7 @@ resource "aws_security_group" "secondary_public" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = var.allowed_ssh_cidrs
   }
   ingress {
     from_port   = 80
@@ -115,7 +115,10 @@ locals {
   nagios_core_user_data = templatefile("${path.module}/scripts/nagios-core.sh", {
     nagios_admin_password = var.nagios_admin_password
   })
-  agent_user_data = file("${path.module}/scripts/nagios-agent.sh")
+  agent_user_data = templatefile("${path.module}/scripts/nagios-agent.sh", {
+    snmp_community   = var.snmp_community
+    snmp_source_cidr = var.primary_vpc_cidr
+  })
 }
 
 # Servidor Nagios Core (VPC principal, subnet pública)

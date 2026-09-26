@@ -11,6 +11,7 @@ echo done > /tmp/nagios-agent.progress
 # doc: https://www.site24x7.com/help/admin/adding-a-monitor/configuring-snmp-linux.html
 yum update -y
 yum install net-snmp -y
-echo "rocommunity public" >> /etc/snmp/snmpd.conf
+# Community só de leitura, aceita apenas a partir da VPC do Nagios Core
+echo "rocommunity ${snmp_community} ${snmp_source_cidr}" >> /etc/snmp/snmpd.conf
 service snmpd restart
 echo done > /tmp/snmp-agent.progress
