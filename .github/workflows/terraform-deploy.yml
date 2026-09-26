@@ -1,0 +1,77 @@
+name: Terraform deploy (manual)
+
+# Só roda por disparo manual (Actions > Terraform deploy > Run workflow).
+# Segredos necessários no repositório:
+#   AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, AWS_SESSION_TOKEN (AWS Academy)
+#   TF_BACKEND_BUCKET, TF_BACKEND_DYNAMODB_TABLE
+#   NAGIOS_ADMIN_PASSWORD, SNMP_COMMUNITY
+on:
+  workflow_dispatch:
+    inputs:
+      action:
+        description: Ação do Terraform
+        type: choice
+        options: [plan, apply, destroy]
+        default: plan
+
+permissions:
+  contents: read
+
+concurrency:
+  group: terraform-state
+  cancel-in-progress: false
+
+env:
+  TERRAFORM_VERSION: 1.9.8
+  AWS_REGION: us-east-1
+
+jobs:
+  terraform:
+    name: terraform ${{ inputs.action }}
+    runs-on: ubuntu-latest
+    environment: aws
+    defaults:
+      run:
+        working-directory: terraform
+    env:
+      TF_IN_AUTOMATION: "true"
+      TF_VAR_nagios_admin_password: ${{ secrets.NAGIOS_ADMIN_PASSWORD }}
+      TF_VAR_snmp_community: ${{ secrets.SNMP_COMMUNITY }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TERRAFORM_VERSION }}
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-session-token: ${{ secrets.AWS_SESSION_TOKEN }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: terraform init
+        run: |
+          terraform init -input=false \
+            -backend-config="bucket=${{ secrets.TF_BACKEND_BUCKET }}" \
+            -backend-config="dynamodb_table=${{ secrets.TF_BACKEND_DYNAMODB_TABLE }}" \
+            -backend-config="key=fiap-iac-gs2/terraform.tfstate" \
+            -backend-config="region=${{ env.AWS_REGION }}" \
+            -backend-config="encrypt=true"
+
+      - name: terraform plan
+        if: inputs.action != 'destroy'
+        run: terraform plan -input=false -out=tfplan
+
+      - name: terraform apply
+        if: inputs.action == 'apply'
+        run: terraform apply -input=false tfplan
+
+      - name: terraform destroy
+        if: inputs.action == 'destroy'
+        run: terraform destroy -input=false -auto-approve
+
+      - name: Saídas
+        if: inputs.action == 'apply'
+        run: terraform output
