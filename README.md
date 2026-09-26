@@ -3,6 +3,10 @@
 </h1>
 
 <p align="center">
+  <img src="docs/demo.webp" alt="Nagios Core rodando: tela inicial, Tactical Overview com 3 hosts e 18 serviços OK, lista de hosts, serviços dos agentes e o detalhe do check de CPU via NCPA" />
+</p>
+
+<p align="center">
   <a href="https://skillicons.dev">
     <img src="https://skillicons.dev/icons?i=terraform,aws,bash,githubactions,docker" alt="Stacks" />
   </a>
