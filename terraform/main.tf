@@ -6,6 +6,7 @@ module "network" {
   primary_vpc_cidr              = var.primary_vpc_cidr
   secondary_vpc_cidr            = var.secondary_vpc_cidr
   primary_public_subnet_cidr    = var.primary_public_subnet_cidr
+  primary_public_subnet_b_cidr  = var.primary_public_subnet_b_cidr
   primary_private_subnet_cidr   = var.primary_private_subnet_cidr
   secondary_public_subnet_cidr  = var.secondary_public_subnet_cidr
   secondary_private_subnet_cidr = var.secondary_private_subnet_cidr

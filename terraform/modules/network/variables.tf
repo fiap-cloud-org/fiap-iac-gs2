@@ -18,6 +18,11 @@ variable "primary_public_subnet_cidr" {
   type        = string
 }
 
+variable "primary_public_subnet_b_cidr" {
+  description = "CIDR da segunda subnet pública da VPC principal (outra zona, usada pelo ALB)"
+  type        = string
+}
+
 variable "primary_private_subnet_cidr" {
   description = "CIDR da subnet privada da VPC principal"
   type        = string
