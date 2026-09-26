@@ -1,0 +1,12 @@
+# Copie para terraform.tfvars e troque os valores (o .tfvars fica fora do git).
+nagios_admin_password = "troque-por-uma-senha-forte"
+snmp_community        = "troque-esta-community"
+
+# Restrinja o SSH ao seu IP público (ex.: curl -s https://checkip.amazonaws.com)
+allowed_ssh_cidrs = ["203.0.113.10/32"]
+
+# Opcionais (valores padrão)
+# aws_region         = "us-east-1"
+# availability_zones = ["us-east-1a", "us-east-1c"]
+# instance_type      = "t2.micro"
+# key_name           = "vockey"
