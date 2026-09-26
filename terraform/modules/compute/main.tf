@@ -89,28 +89,45 @@ resource "aws_security_group" "secondary_private" {
   }
 }
 
-# User-data
+# AMI: Amazon Linux 2 mais recente (os scripts usam yum e amazon-linux-extras).
+# Antes era um ID fixo, que deixa de existir quando a AWS publica novas versões.
 
-data "template_file" "nagios_core_user_data" {
-  template = file("./modules/compute/scripts/nagios-core.sh")
-  vars = {
-    nagios_admin_password = var.nagios_admin_password
+data "aws_ami" "amazon_linux_2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
   }
 }
 
-data "template_file" "agent_user_data" {
-  template = file("./modules/compute/scripts/nagios-agent.sh")
+# User-data: templatefile() substitui o data source template_file, do provider
+# hashicorp/template (descontinuado e sem binário para várias plataformas).
+# path.module deixa o caminho independente do diretório onde o terraform roda.
+
+locals {
+  nagios_core_user_data = templatefile("${path.module}/scripts/nagios-core.sh", {
+    nagios_admin_password = var.nagios_admin_password
+  })
+  agent_user_data = file("${path.module}/scripts/nagios-agent.sh")
 }
 
 # Servidor Nagios Core (VPC principal, subnet pública)
 
 resource "aws_instance" "nagios_core" {
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = var.primary_public_subnet_id
-  vpc_security_group_ids = [aws_security_group.primary_public.id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.nagios_core_user_data.rendered)
+  ami                         = data.aws_ami.amazon_linux_2.id
+  instance_type               = "t2.micro"
+  subnet_id                   = var.primary_public_subnet_id
+  vpc_security_group_ids      = [aws_security_group.primary_public.id]
+  key_name                    = "vockey"
+  user_data                   = local.nagios_core_user_data
+  user_data_replace_on_change = true
   tags = {
     Name = "nagios-core"
   }
@@ -133,12 +150,13 @@ locals {
 resource "aws_instance" "agent" {
   for_each = local.agents
 
-  ami                    = "ami-0a1179631ec8933d7"
-  instance_type          = "t2.micro"
-  subnet_id              = each.value.subnet_id
-  vpc_security_group_ids = [each.value.security_group_id]
-  key_name               = "vockey"
-  user_data              = base64encode(data.template_file.agent_user_data.rendered)
+  ami                         = data.aws_ami.amazon_linux_2.id
+  instance_type               = "t2.micro"
+  subnet_id                   = each.value.subnet_id
+  vpc_security_group_ids      = [each.value.security_group_id]
+  key_name                    = "vockey"
+  user_data                   = local.agent_user_data
+  user_data_replace_on_change = true
   tags = {
     Name = each.key
   }
