@@ -37,8 +37,9 @@ module "lb" {
   vpc_id      = module.network.primary_vpc_id
   vpc_cidr    = var.primary_vpc_cidr
   subnet_ids  = module.network.primary_public_subnet_ids
+
+  # Só o Nagios Core serve HTTP; os agentes rodam NCPA e SNMP, sem servidor web.
   target_instance_ids = {
-    "nagios-core"          = module.compute.nagios_core_instance_id
-    "agent-primary-public" = module.compute.agent_instance_ids["agent-primary-public"]
+    "nagios-core" = module.compute.nagios_core_instance_id
   }
 }
