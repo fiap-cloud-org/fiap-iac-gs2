@@ -89,6 +89,24 @@ resource "aws_security_group" "secondary_private" {
   }
 }
 
+# AMI: Amazon Linux 2 mais recente (os scripts usam yum e amazon-linux-extras).
+# Antes era um ID fixo, que deixa de existir quando a AWS publica novas versões.
+
+data "aws_ami" "amazon_linux_2" {
+  most_recent = true
+  owners      = ["amazon"]
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-hvm-*-x86_64-gp2"]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = ["hvm"]
+  }
+}
+
 # User-data: templatefile() substitui o data source template_file, do provider
 # hashicorp/template (descontinuado e sem binário para várias plataformas).
 # path.module deixa o caminho independente do diretório onde o terraform roda.
@@ -103,7 +121,7 @@ locals {
 # Servidor Nagios Core (VPC principal, subnet pública)
 
 resource "aws_instance" "nagios_core" {
-  ami                         = "ami-0a1179631ec8933d7"
+  ami                         = data.aws_ami.amazon_linux_2.id
   instance_type               = "t2.micro"
   subnet_id                   = var.primary_public_subnet_id
   vpc_security_group_ids      = [aws_security_group.primary_public.id]
@@ -132,7 +150,7 @@ locals {
 resource "aws_instance" "agent" {
   for_each = local.agents
 
-  ami                         = "ami-0a1179631ec8933d7"
+  ami                         = data.aws_ami.amazon_linux_2.id
   instance_type               = "t2.micro"
   subnet_id                   = each.value.subnet_id
   vpc_security_group_ids      = [each.value.security_group_id]
